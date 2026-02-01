@@ -12,7 +12,7 @@ export default async function Reporte1Page() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold">Usuarios frecuentes y su gasto total</h1>
+      <h1 className="text-2xl font-bold">Reporte 1 - Usuarios frecuentes y su gasto total</h1>
       <p className="text-gray-600">Ranking de usuarios que más han comprado.</p>
 
       <h3 className="text-xl font-semibold mt-4">
@@ -21,7 +21,7 @@ export default async function Reporte1Page() {
 
       <table className="mt-6 border-collapse border w-full">
         <thead>
-          <tr className="bg-gray-200">
+          <tr className="bg-green-200">
             <th className="border px-4 py-2">Usuario</th>
             <th className="border px-4 py-2">Ordenes</th>
             <th className="border px-4 py-2">Total Gastado</th>

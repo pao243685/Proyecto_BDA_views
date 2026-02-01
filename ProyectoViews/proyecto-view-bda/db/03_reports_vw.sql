@@ -40,7 +40,7 @@ WHERE total_ordenes > 2;
 
 -- VIEW: vw_categorias_con_mas_ventas
 -- Qué devuelve:
---   Categorías con ventas totales relevantes
+--   Categorías con ventas totales significativas
 -- Grain:
 --   1 fila representa 1 categoría
 -- Métricas:
@@ -97,6 +97,7 @@ JOIN orden_detalles od ON od.producto_id = p.id
 JOIN ordenes o ON o.id = od.orden_id
 WHERE o.status <> 'cancelado'
 GROUP BY c.id, c.nombre, p.id, p.nombre;
+ORDER BY total_unidades DESC;
 
 
 -- VIEW: vw_productos_sin_ventas_ultimo_mes

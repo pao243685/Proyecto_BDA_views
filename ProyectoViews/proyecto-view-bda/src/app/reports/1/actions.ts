@@ -20,16 +20,14 @@ export async function getUsuariosFrecuentes(): Promise<{
   try {
     const q = `
       SELECT *
-      FROM vw_ranking_usuarios_por_gasto
-      ORDER BY total_gastado DESC
-      LIMIT 20;
+      FROM vw_ranking_usuarios_por_gasto;
     `;
 
     const result = await pool.query<UsuarioFrecuente>(q);
 
     return { ok: true, data: result.rows };
     } catch (err) {
-    console.error("Error fetching usuarios frecuentes:", err);
-    return { ok: false, error: "Error fetching usuarios frecuentes" };
+    console.error("Error cargando usuarios frecuentes:", err);
+    return { ok: false, error: "Error cargando usuarios frecuentes" };
   }
 }
