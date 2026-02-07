@@ -1,4 +1,4 @@
-import { pool } from "../../../../lib/db";
+import { pool } from "../../../lib/db";
 
 export async function GET() {
   try {
@@ -10,7 +10,7 @@ export async function GET() {
   } catch (error) {
     return Response.json({
       ok: false,
-      error: error.message,
+      error: "fallo al conectar a la base de datos",
     });
   }
 }

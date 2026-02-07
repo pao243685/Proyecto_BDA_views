@@ -32,6 +32,6 @@ export async function getCategoriasConMasVentas(rawParams: unknown): Promise<{
     return { ok: true, data: result.rows };
   } catch (err) {
     console.error("Error al mostrar categorias con mas ventas:", err);
-    return { ok: false, error: "Error al mostraar categorias con mas ventas" };
+    return { ok: false, error: "Error al mostrar categorias con mas ventas" };
   }
 }

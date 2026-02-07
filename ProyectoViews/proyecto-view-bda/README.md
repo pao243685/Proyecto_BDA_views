@@ -1,16 +1,16 @@
 # Tarea 6: Lab Reportes - Next.js Dashboard con PostgreSQL
 
-# Descripción del Proyecto
+## Descripción del Proyecto
 
 Aplicación Next.js que visualiza reportes SQL mediante VIEWS de PostgreSQL, la aplicación se ejecuta con Docker Compose y utiliza un usuario de base de datos con permisos mínimos
 
 
 
-# Justificación de Índices
+## Justificación de Índices
 
 Para mejorar el rendimiento de las VIEWS se crearon los siguientes indices, cada índice fue probado con EXPLAIN para observar cómo optimiza el plan de ejecución, esto se encuetra en el archivo de 04_indexes.sql
 
-## 1. Índice `idx_ordenes_usuario_status`
+### 1. Índice `idx_ordenes_usuario_status`
 
 ```sql
 CREATE INDEX idx_ordenes_usuario_status
@@ -22,7 +22,7 @@ ON ordenes(usuario_id, status);
 - Permite filtrar directamente por status sin recorrer toda la tabla.
 - Reduce las filas procesadas antes de agrupar GROUP BY.
 
-## 2. Índice `idx_orden_detalles_producto_orden`
+### 2. Índice `idx_orden_detalles_producto_orden`
 
 ```sql
 CREATE INDEX idx_orden_detalles_producto_orden
@@ -33,7 +33,7 @@ ON orden_detalles(producto_id, orden_id);
 - Optimiza los JOIN de orden_detalles con productos (producto_id) y con ordenes (orden_id)
 - Reduce el número de filas intermedias antes de agregaciones y rankings
 
-## 3. Índice `idx_productos_categoria_activo`
+### 3. Índice `idx_productos_categoria_activo`
 
 ```sql
 CREATE INDEX idx_productos_categoria_activo
@@ -48,7 +48,7 @@ WHERE categoria_id IS NOT NULL;
 
 
 
-# Ejecutar el proyecto
+## Ejecutar el proyecto
 
 1. **Clonar el repositorio** 
 ```bash
@@ -64,3 +64,44 @@ docker compose up --build
 ```bash
 docker compose down
 ```
+## Arquitectura y Decisiones Técnicas
+
+### Trade-offs: SQL vs Next.js
+
+#### Procesamiento en SQL
+- **Agregaciones y lógica pesada**: Las operaciones complejas se ejecutan directamente en la base de datos
+  - Funciones de agregación
+  - Window functions
+  - Filtros WHERE
+- **Ventajas**: Reduce el volumen de datos transferidos al servidor y aprovecha los índices de la base de datos
+- **Views**: Se crearon vistas para facilitar el acceso desde Next.js a las consultas necesarias para los reportes
+
+#### Procesamiento en Next.js
+- **Validación y parsing de inputs**: Se utiliza Zod para validar datos antes de enviarlos a la base de datos
+  - Previene el envío de valores inválidos
+  - Mejora la seguridad y consistencia de datos
+- **Cálculos de KPI**: Se realizan en el servidor Next.js
+  - Son cálculos ligeros
+  - Sirven únicamente para propósitos de presentación
+
+### Threat Model: Medidas de Seguridad
+
+#### Prevención de SQL Injection
+- **Queries parametrizados**: Todas las consultas utilizan placeholders (`$1`, `$2`, etc.)
+```typescript
+  pool.query(query, params)
+```
+- **Beneficio**: Evita la inserción de código SQL malicioso
+
+#### Validación de Datos
+- **Zod**: Validación de esquemas antes de ejecutar consultas
+- **Beneficio**: Impide el procesamiento de valores arbitrarios o malformados
+
+#### Control de Acceso
+- **Rol de solo lectura**: El frontend accede únicamente a las vistas (views)
+  - Sin permisos de lectura/escritura directa sobre tablas
+  - Limita la exposición de datos sensibles
+
+#### Gestión de Secretos
+- **Variables de entorno**: No se incluyen en el repositorio
+- **Beneficio**: Reduce el riesgo de filtración de credenciales y secretos
