@@ -1,4 +1,4 @@
-import { getCategoriasConMasVentas } from "./actions";
+import { getCategoriasPorCrecimiento } from "./actions";
 import { Report2Schema } from "./schema";
 
 interface Reporte2PageProps {
@@ -8,29 +8,28 @@ interface Reporte2PageProps {
 export default async function Reporte2Page({ searchParams }: Reporte2PageProps) {
   const params = Report2Schema.parse(await searchParams);
 
-  const { ok, data, error } = await getCategoriasConMasVentas(params);
+  const { ok, data, error } = await getCategoriasPorCrecimiento(params);
   if (!ok || !data) return <div>Error: {error}</div>;
 
-  const totalVentas = data.reduce(
-    (acc, row) => acc + Number(row.total_ventas),
+  const totalVentasMesActual = data.reduce(
+    (acc, row) => acc + Number(row.ventas_mes_actual),
     0
   );
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold">
-        Reporte 2 - Categorías con mas ventas
+        Reporte 2 - Crecimiento de Categorías
       </h1>
       <p className="text-gray-600">
-        Ranking de categorías con mayores ventas con paginacion
+        Ranking de todas las categorías según su porcentaje de crecimiento mensual
       </p>
 
       <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className=" p-4 rounded">
+        <div className="p-4 rounded">
           <h3 className="text-lg font-semibold">
-            KPI: Total Ventas ${totalVentas.toFixed(2)}
+            KPI: Total Ventas Mes Actual ${totalVentasMesActual.toFixed(2)}
           </h3>
-          
         </div>
       </div>
 
@@ -81,17 +80,21 @@ export default async function Reporte2Page({ searchParams }: Reporte2PageProps) 
         <thead>
           <tr className="bg-green-200">
             <th className="border px-4 py-2">Categoría</th>
-            <th className="border px-4 py-2">Total Ventas</th>
-            <th className="border px-4 py-2">Total Unidades</th>
+            <th className="border px-4 py-2">Ventas Mes Actual</th>
+            <th className="border px-4 py-2">Ventas Mes Anterior</th>
+            <th className="border px-4 py-2">% Crecimiento</th>
           </tr>
         </thead>
 
         <tbody>
           {data.map((c) => (
-            <tr key={c.nombre_categoria}>
+            <tr key={c.categoria_id}>
               <td className="border px-4 py-2">{c.nombre_categoria}</td>
-              <td className="border px-4 py-2">${c.total_ventas}</td>
-              <td className="border px-4 py-2">{c.total_unidades}</td>
+              <td className="border px-4 py-2">${c.ventas_mes_actual}</td>
+              <td className="border px-4 py-2">${c.ventas_mes_anterior}</td>
+              <td className="border px-4 py-2">
+                  {Number(c.porcentaje_crecimiento ?? 0).toFixed(2)}%
+              </td>
             </tr>
           ))}
         </tbody>

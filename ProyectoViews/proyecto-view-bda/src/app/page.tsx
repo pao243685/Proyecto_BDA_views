@@ -1,7 +1,7 @@
 export default function Home() {
   const reports = [
     { id: 1, name: "Usuarios frecuentes y gasto total" },
-    { id: 2, name: "Categorías con más ventas" },
+    { id: 2, name: "Crecimiento por categorías" },
     { id: 3, name: "Productos más vendidos" },
     { id: 4, name: "Productos sin ventas último mes" },
     { id: 5, name: "Ventas totales por categoría" },
@@ -16,7 +16,7 @@ export default function Home() {
         <li className=" text-xl font-semibold text-center w-200 p-2 ml-70">Reportes</li>
         {reports.map((r) => (
           <li key={r.id}>
-            <a className="text-white text-center mb-10 bg-green-600 filter saturate-30 p-2 block w-200 ml-80" href={`/reports/${r.id}`}>
+            <a className="text-white text-center mb-10 bg-green-600 filter saturate-30 p-2 block w-200 ml-80 rounded-2xl" href={`/reports/${r.id}`}>
               {r.name}
             </a>
           </li>

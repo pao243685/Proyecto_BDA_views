@@ -19,7 +19,7 @@ REVOKE ALL ON ALL TABLES IN SCHEMA public FROM just_vw_role;
 -- Permisos en vistas
 GRANT SELECT ON
   vw_ranking_usuarios_por_gasto,
-  vw_categorias_con_mas_ventas,
+  vw_categorias_por_crecimiento,
   vw_productos_mas_vendidos_por_categoria,
   vw_productos_sin_ventas_ultimo_mes,
   vw_ventas_totales_por_categoria

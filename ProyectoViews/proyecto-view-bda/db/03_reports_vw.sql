@@ -38,32 +38,61 @@ FROM resumen_usuarios
 WHERE total_ordenes > 2;
 
 
--- VIEW: vw_categorias_con_mas_ventas
+-- VIEW: vw_categorias_por_crecimiento
 -- Qué devuelve:
---   Categorías con ventas totales relevantes
+--   Todas las categorías con ventas del mes actual y del mes anterior,
+--   y el porcentaje de crecimiento mensual.
 -- Grain:
 --   1 fila representa 1 categoría
 -- Métricas:
---   total_ventas, total_unidades
--- Por qué GROUP BY / HAVING:
---   Se agrupa por categoría y se filtran aquellas con ventas significativas
+--   ventas_mes_actual, ventas_mes_anterior, porcentaje_crecimiento
+-- Por qué GROUP BY / CTE:
+--   Se agrupa por categoría y mes para calcular totales,
+--   luego se compara mes actual vs mes anterior para obtener el crecimiento.
 -- VERIFY:
---   SELECT * FROM vw_categorias_con_mas_ventas;
+--   SELECT * FROM vw_categorias_por_crecimiento
+--   ORDER BY porcentaje_crecimiento DESC
+--   LIMIT 10;
 
 
-CREATE OR REPLACE VIEW vw_categorias_con_mas_ventas AS
-SELECT
-  c.id AS categoria_id,
-  c.nombre AS nombre_categoria,
-  SUM(od.subtotal) AS total_ventas,
-  SUM(od.cantidad) AS total_unidades
-FROM categorias c
-JOIN productos p ON p.categoria_id = c.id
-JOIN orden_detalles od ON od.producto_id = p.id
-JOIN ordenes o ON o.id = od.orden_id
-WHERE o.status <> 'cancelado'
-GROUP BY c.id, c.nombre
-HAVING SUM(od.subtotal) > 500;
+
+CREATE OR REPLACE VIEW vw_categorias_por_crecimiento AS
+WITH ventas_por_mes AS (
+    SELECT
+        c.id AS categoria_id,
+        c.nombre AS nombre_categoria,
+        DATE_TRUNC('month', o.created_at) AS mes,
+        SUM(od.subtotal) AS total_ventas
+    FROM categorias c
+    JOIN productos p ON p.categoria_id = c.id
+    JOIN orden_detalles od ON od.producto_id = p.id
+    JOIN ordenes o ON o.id = od.orden_id
+    WHERE o.status <> 'cancelado'
+    GROUP BY c.id, c.nombre, DATE_TRUNC('month', o.created_at)
+),
+ventas_actual_anterior AS (
+    SELECT
+        c.categoria_id,
+        c.nombre_categoria,
+        COALESCE(v_actual.total_ventas,0) AS ventas_mes_actual,
+        COALESCE(v_anterior.total_ventas,0) AS ventas_mes_anterior,
+        CASE 
+            WHEN COALESCE(v_anterior.total_ventas,0) = 0 
+                THEN 0
+            ELSE ((v_actual.total_ventas - v_anterior.total_ventas) / v_anterior.total_ventas::numeric) * 100
+        END AS porcentaje_crecimiento
+    FROM (SELECT DISTINCT categoria_id, nombre_categoria FROM ventas_por_mes) c
+    LEFT JOIN ventas_por_mes v_actual
+        ON c.categoria_id = v_actual.categoria_id
+       AND v_actual.mes = DATE_TRUNC('month', CURRENT_DATE)
+    LEFT JOIN ventas_por_mes v_anterior
+        ON c.categoria_id = v_anterior.categoria_id
+       AND v_anterior.mes = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+)
+SELECT *
+FROM ventas_actual_anterior
+ORDER BY porcentaje_crecimiento DESC;
+
 
 
 

@@ -3,35 +3,34 @@
 import { pool } from "../../../../lib/db";
 import { Report2Schema } from "./schema";
 
-export interface CategoriaVenta {
+export interface CategoriaCrecimiento {
+  categoria_id: number;
   nombre_categoria: string;
-  total_ventas: number;
-  total_unidades: number;
+  ventas_mes_actual: number;
+  ventas_mes_anterior: number;
+  porcentaje_crecimiento: number;
 }
 
-export async function getCategoriasConMasVentas(rawParams: unknown): Promise<{
+export async function getCategoriasPorCrecimiento(rawParams: unknown): Promise<{
   ok: boolean;
-  data?: CategoriaVenta[];
+  data?: CategoriaCrecimiento[];
   error?: string;
 }> {
   try {
     const { page, limit } = Report2Schema.parse(rawParams);
-
     const offset = (page - 1) * limit;
-
-    const params: number[] = [limit, offset];
 
     const q = `
       SELECT *
-      FROM vw_categorias_con_mas_ventas
+      FROM vw_categorias_por_crecimiento
       LIMIT $1 OFFSET $2;
     `;
 
-    const result = await pool.query<CategoriaVenta>(q, params);
+    const result = await pool.query<CategoriaCrecimiento>(q, [limit, offset]);
 
     return { ok: true, data: result.rows };
   } catch (err) {
-    console.error("Error al mostrar categorias con mas ventas:", err);
-    return { ok: false, error: "Error al mostrar categorias con mas ventas" };
+    console.error("Error al mostrar categorías por crecimiento:", err);
+    return { ok: false, error: "Error al mostrar categorías por crecimiento" };
   }
 }
