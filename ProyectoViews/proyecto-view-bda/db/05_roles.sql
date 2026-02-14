@@ -2,7 +2,7 @@
 CREATE ROLE just_vw_role;
 
 -- Usuario de vistas
-CREATE USER vw_user WITH PASSWORD 'annara10';
+CREATE USER vw_user WITH PASSWORD 'annara20';
 
 -- Relación entre ellos
 GRANT just_vw_role TO vw_user;
